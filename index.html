@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Ask What Kind of Music Player</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Table for song list -->
+    <table id="song-table">
+        <thead>
+            <tr>
+                <th><img class="album-art" src="images/default-cover.jpg"></th>
+                <th onclick="sortSongs('title')">Song</th>
+                <th onclick="sortSongs('artist')">Artist</th>
+                <th onclick="sortSongs('album')">Album</th>
+                <th onclick="sortSongs('length')">Length</th>
+            </tr>
+        </thead>
+        <tbody id="song-list"></tbody>
+    </table>
+
+    <!-- Fixed Bottom Player -->
+ <!-- Fixed Bottom Player -->
+<!-- Fixed Bottom Player -->
+<div id="player-container">
+    <p id="current-track">No track playing</p>
+    <audio id="audioPlayer"></audio>
+    
+    <!-- Progress Bar -->
+    <div id="progress-container" onclick="seekTrack(event)">
+        <div id="progress-bar"></div>
+    </div>
+    <p id="time-display">0:00 / 0:00</p>
+
+    <div class="controls">
+        <button onclick="prevTrack()">⏮</button>
+        <button id="play-btn" onclick="togglePlay()">▶</button>
+        <button onclick="nextTrack()">⏭</button>
+        <button onclick="shuffleTracks()">🔀</button>
+        <button onclick="stopTrack()">⏹</button>
+    </div>
+</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <script src="js/metadata.js"></script>
+    <script src="js/player.js"></script>
+</body>
+</html>
