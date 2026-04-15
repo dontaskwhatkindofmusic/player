@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Music Player">
+    <title>Static Music Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #0a0a0a;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .library-header {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .library-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .library-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #444;
+        }
+
+        .btn.primary {
+            background: #1db954;
+        }
+
+        .btn.primary:hover {
+            background: #1ed760;
+        }
+
+        .library-filter {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .filter-input::placeholder {
+            color: #666;
+        }
+
+        .library-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .library-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .library-item:hover {
+            background: #1a1a1a;
+        }
+
+        .library-item.active {
+            background: #1db954;
+        }
+
+        .library-item-title {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .library-item-artist {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .main-player {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .player-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .album-art {
+            width: 280px;
+            height: 280px;
+            background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .now-playing-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .now-playing-artist {
+            font-size: 18px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .now-playing-source {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .player-controls {
+            background: #0a0a0a;
+            padding: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .progress-container {
+            margin-bottom: 16px;
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1db954;
+            transition: width 0.1s;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #444;
+        }
+
+        .control-btn.play-pause {
+            width: 56px;
+            height: 56px;
+            background: #1db954;
+            font-size: 24px;
+        }
+
+        .control-btn.play-pause:hover {
+            background: #1ed760;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #1db954;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .settings-panel {
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 14px;
+            flex-direction: column;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1db954;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-value {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .library-stats {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #999;
+        }
+
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            color: #1db954;
+            font-weight: 600;
+        }
+
+        .url-input-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0a0a0a;
+            color: #fff;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        .url-input::placeholder {
+            color: #555;
+        }
+
+        .url-example {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #333;
+            border-top-color: #1db954;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .filter-chip {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: #1db954;
+            border-color: #1db954;
+        }
+
+        .filter-chip:hover {
+            border-color: #1db954;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #333;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .album-art {
+                width: 160px;
+                height: 160px;
+                font-size: 48px;
+                margin-bottom: 16px;
+            }
+
+            .now-playing-title {
+                font-size: 20px;
+            }
+
+            .now-playing-artist {
+                font-size: 14px;
+            }
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <!-- Sidebar: Library -->
+            <div class="sidebar scrollbar">
+                <div class="library-header">
+                    <div class="library-title">Library</div>
+                    <div class="library-controls">
+                        <button class="btn primary" id="selectFolderBtn" title="Select local folder">📁 Local</button>
+                        <button class="btn primary" id="settingsBtn" title="Settings">⚙️</button>
+                    </div>
+                </div>
+                <div class="library-filter">
+                    <input
+                        type="text"
+                        class="filter-input"
+                        id="searchInput"
+                        placeholder="Search songs..."
+                    >
+                </div>
+                <div class="library-list scrollbar" id="libraryList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎵</div>
+                        <div class="empty-state-text">Select a folder to load your music</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Player -->
+            <div class="main-player">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="player">Now Playing</button>
+                    <button class="tab-btn" data-tab="filters">Filters</button>
+                    <button class="tab-btn" data-tab="settings">Settings</button>
+                </div>
+
+                <!-- Now Playing Tab -->
+                <div class="tab-content active" id="playerTab">
+                    <div class="player-display">
+                        <div class="album-art" id="albumArt">🎵</div>
+                        <h1 class="now-playing-title" id="nowPlayingTitle">No track selected</h1>
+                        <p class="now-playing-artist" id="nowPlayingArtist">—</p>
+                        <p class="now-playing-source" id="nowPlayingSource">—</p>
+                    </div>
+                </div>
+
+                <!-- Filters Tab -->
+                <div class="tab-content" id="filtersTab">
+                    <div style="flex: 1; overflow-y: auto; padding: 16px;">
+                        <div style="margin-bottom: 24px;">
+                            <div style="font-weight: 600; margin-bottom: 12px; color: #1db954;">Artists</div>
+                            <div id="artistFilters" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <div style="font-weight: 600; margin-bottom: 12px; color: #1db954;">Genres</div>
+                            <div id="genreFilters" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 12px; color: #1db954;">Years</div>
+                            <div id="yearFilters" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div class="tab-content" id="settingsTab">
+                    <div class="settings-panel scrollbar">
+                        <div class="settings-section">
+                            <div class="settings-title">Library Statistics</div>
+                            <div class="library-stats">
+                                <div class="stat-row">
+                                    <span class="stat-label">Songs Loaded:</span>
+                                    <span class="stat-value" id="songCount">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Library Size:</span>
+                                    <span class="stat-value" id="librarySize">0 MB</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Source:</span>
+                                    <span class="stat-value" id="sourceType">None</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Cache Size:</span>
+                                    <span class="stat-value" id="cacheSize">0 KB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">Local Library</div>
+                            <button class="btn primary" id="changeFolderBtn" style="width: 100%;">📁 Change Local Folder</button>
+                            <div id="folderPath" style="padding: 8px; background: #1a1a1a; border-radius: 4px; margin-top: 8px; font-size: 11px; color: #999; word-break: break-all;">
+                                None selected
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">Remote Library (URL)</div>
+                            <div class="url-input-section">
+                                <input
+                                    type="text"
+                                    class="url-input"
+                                    id="remoteUrlInput"
+                                    placeholder="Enter remote library URL..."
+                                >
+                                <button class="btn primary" id="loadRemoteBtn" style="width: 100%;">📡 Load Remote Library</button>
+                                <div class="url-example">
+                                    <strong>Examples:</strong><br>
+                                    • https://github.com/user/music/tree/main/songs<br>
+                                    • https://example.com/music<br>
+                                    • https://cdn.example.com/library/songs
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">Cache Management</div>
+                            <button class="btn" id="clearCacheBtn" style="width: 100%; margin-bottom: 8px;">🗑️ Clear Library Cache</button>
+                            <div style="font-size: 12px; color: #666;">
+                                Cached library metadata lets you refresh the page without reloading. Clear this to start fresh.
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">About</div>
+                            <div style="font-size: 12px; color: #999;">
+                                <p>Static Music Player v2.0</p>
+                                <p style="margin-top: 8px;">✅ Local and remote libraries</p>
+                                <p>✅ Persistent cache</p>
+                                <p>✅ Zero tracking</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Controls -->
+        <div class="player-controls">
+            <div class="progress-container">
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" id="prevBtn" title="Previous">⏮</button>
+                <button class="control-btn" id="shuffleBtn" title="Shuffle">🔀</button>
+                <button class="control-btn play-pause" id="playPauseBtn" title="Play/Pause">▶</button>
+                <button class="control-btn" id="repeatBtn" title="Repeat">🔁</button>
+                <button class="control-btn" id="nextBtn" title="Next">⏭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element -->
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        // ============ GLOBAL STATE ============
+        const state = {
+            songs: [],
+            filteredSongs: [],
+            currentIndex: -1,
+            isPlaying: false,
+            volume: 0.7,
+            isShuffle: false,
+            repeatMode: 'off', // 'off', 'all', 'one'
+            libraryHandle: null,
+            sourceType: 'none', // 'local', 'remote', or 'none'
+            remoteUrl: null,
+            libraryMetadata: [], // Cached metadata
+            remoteLibraries: [], // Store multiple remote URLs
+            activeFilters: {
+                artist: null,
+                genre: null,
+                year: null
+            }
+        };
+
+        const elements = {
+            audio: document.getElementById('audioPlayer'),
+            playPauseBtn: document.getElementById('playPauseBtn'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            shuffleBtn: document.getElementById('shuffleBtn'),
+            repeatBtn: document.getElementById('repeatBtn'),
+            progressBar: document.getElementById('progressBar'),
+            progressFill: document.getElementById('progressFill'),
+            currentTime: document.getElementById('currentTime'),
+            duration: document.getElementById('duration'),
+            libraryList: document.getElementById('libraryList'),
+            searchInput: document.getElementById('searchInput'),
+            selectFolderBtn: document.getElementById('selectFolderBtn'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            nowPlayingTitle: document.getElementById('nowPlayingTitle'),
+            nowPlayingArtist: document.getElementById('nowPlayingArtist'),
+            nowPlayingSource: document.getElementById('nowPlayingSource'),
+            albumArt: document.getElementById('albumArt'),
+            folderPath: document.getElementById('folderPath'),
+            changeFolderBtn: document.getElementById('changeFolderBtn'),
+            remoteUrlInput: document.getElementById('remoteUrlInput'),
+            loadRemoteBtn: document.getElementById('loadRemoteBtn'),
+            clearCacheBtn: document.getElementById('clearCacheBtn'),
+            songCount: document.getElementById('songCount'),
+            librarySize: document.getElementById('librarySize'),
+            sourceType: document.getElementById('sourceType'),
+            cacheSize: document.getElementById('cacheSize'),
+            tabButtons: document.querySelectorAll('.tab-btn'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            artistFilters: document.getElementById('artistFilters'),
+            genreFilters: document.getElementById('genreFilters'),
+            yearFilters: document.getElementById('yearFilters')
+        };
+
+        // ============ INITIALIZATION ============
+        async function init() {
+            await loadState();
+            setupEventListeners();
+            updateUI();
+            // Check for File System Access API support
+            if (!('showDirectoryPicker' in window)) {
+                console.warn('File System Access API not supported in this browser');
+            }
+        }
+
+        // ============ STATE MANAGEMENT (localStorage + sessionStorage) ============
+        async function saveState() {
+            // Save metadata cache (lightweight)
+            localStorage.setItem('musicLibraryMetadata', JSON.stringify(state.libraryMetadata));
+            localStorage.setItem('librarySourceType', state.sourceType);
+            localStorage.setItem('libraryRemoteUrl', state.remoteUrl || '');
+            localStorage.setItem('libraryFolderPath', elements.folderPath.textContent);
+            localStorage.setItem('remoteLibraries', JSON.stringify(state.remoteLibraries));
+            localStorage.setItem('activeFilters', JSON.stringify(state.activeFilters));
+            localStorage.setItem('isShuffle', state.isShuffle);
+            localStorage.setItem('repeatMode', state.repeatMode);
+            localStorage.setItem('volume', state.volume);
+        }
+
+        async function loadState() {
+            const cached = localStorage.getItem('musicLibraryMetadata');
+            const remoteLibraries = localStorage.getItem('remoteLibraries');
+            const activeFilters = localStorage.getItem('activeFilters');
+            const folderPath = localStorage.getItem('libraryFolderPath');
+            const isShuffle = localStorage.getItem('isShuffle');
+            const repeatMode = localStorage.getItem('repeatMode');
+            const volume = localStorage.getItem('volume');
+
+            try {
+                if (remoteLibraries) {
+                    state.remoteLibraries = JSON.parse(remoteLibraries);
+                }
+                if (activeFilters) {
+                    state.activeFilters = JSON.parse(activeFilters);
+                }
+                if (isShuffle !== null) {
+                    state.isShuffle = isShuffle === 'true';
+                }
+                if (repeatMode) {
+                    state.repeatMode = repeatMode;
+                }
+                if (volume) {
+                    state.volume = parseFloat(volume);
+                    elements.audio.volume = state.volume;
+                }
+
+                if (cached) {
+                    state.libraryMetadata = JSON.parse(cached);
+
+                    // Rebuild songs from metadata
+                    state.songs = state.libraryMetadata.map(meta => ({
+                        ...meta,
+                        file: null // File object not stored
+                    }));
+
+                    applyFilters();
+
+                    if (folderPath && folderPath !== 'None selected') {
+                        elements.folderPath.textContent = folderPath;
+                    }
+
+                    updateUI();
+                    console.log(`Loaded ${state.songs.length} songs from cache`);
+                }
+            } catch (err) {
+                console.error('Error loading cached library:', err);
+            }
+        }
+
+        // ============ FILE SYSTEM ACCESS (Local) ============
+        async function selectFolder() {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                state.libraryHandle = dirHandle;
+                await loadLocalLibrary(dirHandle);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    alert('Error: ' + err.message);
+                }
+            }
+        }
+
+        async function loadLocalLibrary(dirHandle) {
+            // Don't clear existing songs - merge with them
+            const newSongs = [];
+            state.sourceType = 'local';
+
+            elements.libraryList.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div> Scanning library...</div>';
+
+            await scanDirectory(dirHandle, '', newSongs);
+
+            // Combine new songs with existing ones (from remote)
+            const existingUrls = new Set(state.songs.map(s => s.fileUrl || s.path));
+            const uniqueNewSongs = newSongs.filter(s => !existingUrls.has(s.fileUrl || s.path));
+
+            state.songs = [...state.songs, ...uniqueNewSongs];
+            state.songs.sort((a, b) => (a.artist || '').localeCompare(b.artist) || (a.title || '').localeCompare(b.title));
+
+            // Update cache metadata
+            state.libraryMetadata = state.songs.map(s => ({
+                title: s.title,
+                artist: s.artist,
+                album: s.album,
+                path: s.path,
+                fileUrl: s.fileUrl, // Include for remote libraries
+                size: s.size,
+                genre: s.genre,
+                year: s.year
+            }));
+
+            applyFilters();
+            elements.folderPath.textContent = dirHandle.name;
+            saveState();
+            updateUI();
+        }
+
+        async function scanDirectory(dirHandle, currentPath = '', songs = null) {
+            if (!songs) songs = state.songs; // Default to state.songs if not provided
+            try {
+                for await (const [name, handle] of dirHandle.entries()) {
+                    if (handle.kind === 'file') {
+                        const ext = name.split('.').pop().toLowerCase();
+                        if (['mp3', 'wav', 'flac', 'm4a', 'ogg', 'aac'].includes(ext)) {
+                            const file = await handle.getFile();
+                            const title = name.replace(/\.[^.]+$/, '');
+
+                            // Extract metadata from file
+                            let metadata = {
+                                title,
+                                artist: 'Unknown Artist',
+                                album: 'Unknown Album',
+                                genre: 'Unknown',
+                                year: new Date().getFullYear()
+                            };
+
+                            try {
+                                if (ext === 'mp3') {
+                                    const extracted = await extractID3Metadata(file, name);
+                                    metadata = { ...metadata, ...extracted };
+                                } else if (ext === 'm4a' || ext === 'aac') {
+                                    const extracted = await extractM4AMetadata(file, name);
+                                    metadata = { ...metadata, ...extracted };
+                                }
+                            } catch (err) {
+                                console.log(`Could not extract metadata from ${name}:`, err.message);
+                            }
+
+                            songs.push({
+                                file,
+                                path: currentPath ? `${currentPath}/${name}` : name,
+                                ...metadata
+                            });
+                        }
+                    } else if (handle.kind === 'directory') {
+                        const newPath = currentPath ? `${currentPath}/${name}` : name;
+                        await scanDirectory(handle, newPath, songs);
+                    }
+                }
+            } catch (err) {
+                console.error('Error scanning:', err);
+            }
+        }
+
+        // ============ METADATA EXTRACTION ============
+        async function extractID3Metadata(file, filename) {
+            const buffer = await file.slice(0, 100000).arrayBuffer(); // Read first 100KB
+            const view = new Uint8Array(buffer);
+
+            const metadata = {
+                title: filename.replace(/\.[^.]+$/, ''),
+                artist: 'Unknown Artist',
+                album: 'Unknown Album',
+                year: new Date().getFullYear(),
+                genre: 'Unknown'
+            };
+
+            // Look for ID3v2 tag
+            if (view[0] === 0x49 && view[1] === 0x44 && view[2] === 0x33) { // 'ID3'
+                const version = view[3];
+                if (version >= 3 && version <= 4) {
+                    const frameSize = ((view[6] & 0x7f) << 21) | ((view[7] & 0x7f) << 14) | ((view[8] & 0x7f) << 7) | (view[9] & 0x7f);
+                    const tagEnd = Math.min(10 + frameSize, view.length - 4);
+
+                    let pos = 10;
+                    while (pos < tagEnd && pos < view.length - 4) {
+                        const frameID = String.fromCharCode(view[pos], view[pos+1], view[pos+2], view[pos+3]);
+                        let frameSizeVal;
+
+                        if (version === 3) {
+                            frameSizeVal = (view[pos+4] << 24) | (view[pos+5] << 16) | (view[pos+6] << 8) | view[pos+7];
+                            if (frameSizeVal === 0) break;
+                            const frameData = view.slice(pos + 10, Math.min(pos + 10 + frameSizeVal, view.length));
+                            const text = decodeID3Text(frameData);
+
+                            if (frameID === 'TIT2') metadata.title = text;
+                            if (frameID === 'TPE1') metadata.artist = text;
+                            if (frameID === 'TALB') metadata.album = text;
+                            if (frameID === 'TYER') metadata.year = parseInt(text) || metadata.year;
+                            if (frameID === 'TCON') metadata.genre = text;
+
+                            pos += 10 + frameSizeVal;
+                        } else if (version === 4) {
+                            frameSizeVal = ((view[pos+4] & 0x7f) << 21) | ((view[pos+5] & 0x7f) << 14) | ((view[pos+6] & 0x7f) << 7) | (view[pos+7] & 0x7f);
+                            if (frameSizeVal === 0) break;
+                            const frameData = view.slice(pos + 10, Math.min(pos + 10 + frameSizeVal, view.length));
+                            const text = decodeID3Text(frameData);
+
+                            if (frameID === 'TIT2') metadata.title = text;
+                            if (frameID === 'TPE1') metadata.artist = text;
+                            if (frameID === 'TALB') metadata.album = text;
+                            if (frameID === 'TDRC') metadata.year = parseInt(text) || metadata.year;
+                            if (frameID === 'TCON') metadata.genre = text;
+
+                            pos += 10 + frameSizeVal;
+                        }
+                    }
+                }
+            }
+
+            return metadata;
+        }
+
+        async function extractM4AMetadata(file, filename) {
+            const metadata = {
+                title: filename.replace(/\.[^.]+$/, ''),
+                artist: 'Unknown Artist',
+                album: 'Unknown Album',
+                year: new Date().getFullYear(),
+                genre: 'Unknown'
+            };
+
+            // M4A metadata extraction is complex
+            // For now, just return filename-based metadata
+            // Full M4A parsing would require a library
+            return metadata;
+        }
+
+        function decodeID3Text(bytes) {
+            if (bytes.length === 0) return '';
+            const encoding = bytes[0];
+            const content = bytes.slice(1);
+
+            try {
+                switch (encoding) {
+                    case 0: // ISO-8859-1
+                        return String.fromCharCode(...content).split('\0')[0];
+                    case 1: // UTF-16 with BOM
+                    case 3: // UTF-8
+                        return new TextDecoder().decode(content).split('\0')[0];
+                    default:
+                        return String.fromCharCode(...Array.from(content)).split('\0')[0];
+                }
+            } catch (err) {
+                return '';
+            }
+        }
+
+        // ============ REMOTE LIBRARY LOADING ============
+        async function loadRemoteLibrary(url) {
+            // Add to remote libraries list if not already there
+            if (!state.remoteLibraries.includes(url)) {
+                state.remoteLibraries.push(url);
+            }
+
+            elements.libraryList.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div> Loading remote library...</div>';
+
+            try {
+                // Handle GitHub URLs
+                if (url.includes('github.com')) {
+                    await loadFromGitHub(url);
+                } else {
+                    // Generic remote server with JSON manifest
+                    await loadFromRemoteServer(url);
+                }
+
+                applyFilters();
+                saveState();
+                updateUI();
+            } catch (err) {
+                alert('Error loading remote library: ' + err.message);
+                elements.libraryList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><div class="empty-state-text">Failed to load remote library</div></div>';
+            }
+        }
+
+        async function loadFromGitHub(url) {
+            // Convert GitHub web URL to API URL
+            // https://github.com/user/repo/tree/main/songs → API endpoint
+            const match = url.match(/github\.com\/([^/]+)\/([^/]+)\/?(?:tree\/([^/]+))?(?:\/(.*))?/);
+
+            if (!match) {
+                throw new Error('Invalid GitHub URL format');
+            }
+
+            const [, owner, repo, branch = 'main', path = ''] = match;
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+
+            console.log('Fetching from GitHub API:', apiUrl);
+
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+
+            const contents = await response.json();
+
+            if (!Array.isArray(contents)) {
+                throw new Error('Invalid GitHub response');
+            }
+
+            // Filter for audio files
+            const audioFiles = contents.filter(item => {
+                const ext = item.name.split('.').pop().toLowerCase();
+                return ['mp3', 'wav', 'flac', 'm4a', 'ogg', 'aac'].includes(ext);
+            });
+
+            // Check for duplicates before adding
+            const existingPaths = new Set(state.songs.map(s => s.path));
+
+            for (const item of audioFiles) {
+                // Skip if already exists
+                if (existingPaths.has(item.path)) continue;
+
+                const title = item.name.replace(/\.[^.]+$/, '');
+                const fileUrl = item.download_url;
+
+                state.songs.push({
+                    title,
+                    artist: 'Remote Library',
+                    album: owner,
+                    path: item.path,
+                    fileUrl, // URL to fetch from
+                    size: item.size,
+                    genre: 'Unknown',
+                    year: new Date().getFullYear()
+                });
+
+                state.libraryMetadata.push({
+                    title,
+                    artist: 'Remote Library',
+                    album: owner,
+                    path: item.path,
+                    fileUrl, // Include URL in cache
+                    size: item.size,
+                    genre: 'Unknown',
+                    year: new Date().getFullYear()
+                });
+            }
+
+            console.log(`Loaded ${audioFiles.length} songs from GitHub`);
+        }
+
+        async function loadFromRemoteServer(url) {
+            // Expects URL to a JSON manifest: {"songs": [{title, artist, album, url}, ...]}
+            const response = await fetch(`${url}/manifest.json`);
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+            const data = await response.json();
+
+            if (!Array.isArray(data.songs)) {
+                throw new Error('Invalid manifest format');
+            }
+
+            for (const song of data.songs) {
+                state.songs.push({
+                    title: song.title || 'Unknown',
+                    artist: song.artist || 'Unknown',
+                    album: song.album || 'Unknown',
+                    fileUrl: `${url}/${song.path}`,
+                    path: song.path,
+                    size: song.size
+                });
+
+                state.libraryMetadata.push({
+                    title: song.title,
+                    artist: song.artist,
+                    album: song.album,
+                    path: song.path,
+                    fileUrl: `${url}/${song.path}`, // Include URL in cache
+                    size: song.size
+                });
+            }
+        }
+
+        // ============ FILTERING & SEARCH ============
+        function applySearch() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = elements.searchInput.value.toLowerCase();
+            state.filteredSongs = state.songs.filter(song => {
+                // Search filter
+                if (query && !song.title.toLowerCase().includes(query) &&
+                    !song.artist.toLowerCase().includes(query) &&
+                    !song.album.toLowerCase().includes(query)) {
+                    return false;
+                }
+
+                // Advanced filters
+                if (state.activeFilters.artist && song.artist !== state.activeFilters.artist) return false;
+                if (state.activeFilters.genre && song.genre !== state.activeFilters.genre) return false;
+                if (state.activeFilters.year && song.year !== state.activeFilters.year) return false;
+
+                return true;
+            });
+
+            updateLibraryUI();
+            updateFilterUI();
+        }
+
+        function updateFilterUI() {
+            // Update artist filters
+            const artists = [...new Set(state.songs.map(s => s.artist || 'Unknown').filter(a => a))].sort();
+            elements.artistFilters.innerHTML = artists.map(artist => `
+                <div class="filter-chip ${state.activeFilters.artist === artist ? 'active' : ''}"
+                     onclick="setFilter('artist', '${artist.replace(/'/g, "\\'")}')">
+                    ${artist}
+                </div>
+            `).join('');
+
+            // Update genre filters
+            const genres = [...new Set(state.songs.map(s => s.genre || 'Unknown').filter(g => g))].sort();
+            elements.genreFilters.innerHTML = genres.map(genre => `
+                <div class="filter-chip ${state.activeFilters.genre === genre ? 'active' : ''}"
+                     onclick="setFilter('genre', '${genre.replace(/'/g, "\\'")}')">
+                    ${genre}
+                </div>
+            `).join('');
+
+            // Update year filters
+            const years = [...new Set(state.songs.map(s => s.year || new Date().getFullYear()).filter(y => y))].sort((a, b) => b - a);
+            elements.yearFilters.innerHTML = years.map(year => `
+                <div class="filter-chip ${state.activeFilters.year === year ? 'active' : ''}"
+                     onclick="setFilter('year', ${year})">
+                    ${year}
+                </div>
+            `).join('');
+        }
+
+        function setFilter(filterType, value) {
+            state.activeFilters[filterType] = state.activeFilters[filterType] === value ? null : value;
+            applyFilters();
+            saveState();
+        }
+
+        // ============ PLAYBACK ============
+        function play() {
+            if (state.currentIndex >= 0) {
+                elements.audio.play();
+                state.isPlaying = true;
+                updatePlayPauseButton();
+            }
+        }
+
+        function pause() {
+            elements.audio.pause();
+            state.isPlaying = false;
+            updatePlayPauseButton();
+        }
+
+        function togglePlayPause() {
+            state.isPlaying ? pause() : play();
+        }
+
+        function nextTrack() {
+            if (state.filteredSongs.length === 0) return;
+
+            if (state.isShuffle) {
+                state.currentIndex = Math.floor(Math.random() * state.filteredSongs.length);
+            } else {
+                state.currentIndex = (state.currentIndex + 1) % state.filteredSongs.length;
+            }
+
+            loadTrack(state.currentIndex);
+            play();
+        }
+
+        function prevTrack() {
+            if (state.filteredSongs.length === 0) return;
+            state.currentIndex = (state.currentIndex - 1 + state.filteredSongs.length) % state.filteredSongs.length;
+            loadTrack(state.currentIndex);
+            play();
+        }
+
+        function loadTrack(index) {
+            if (index < 0 || index >= state.filteredSongs.length) return;
+
+            state.currentIndex = index;
+            const song = state.filteredSongs[index];
+
+            // Use fileUrl for remote or blob for local
+            const url = song.fileUrl || (song.file ? URL.createObjectURL(song.file) : null);
+            if (!url) {
+                console.error('No URL available for song');
+                return;
+            }
+
+            elements.audio.src = url;
+            updateNowPlaying(song);
+            updateLibraryUI();
+        }
+
+        function updateNowPlaying(song) {
+            elements.nowPlayingTitle.textContent = song.title;
+            elements.nowPlayingArtist.textContent = song.artist;
+            elements.nowPlayingSource.textContent = state.sourceType === 'remote' ? '📡 Remote' : '💾 Local';
+        }
+
+        function updatePlayPauseButton() {
+            elements.playPauseBtn.textContent = state.isPlaying ? '⏸' : '▶';
+        }
+
+        function updateRepeatButton() {
+            if (state.repeatMode === 'off') {
+                elements.repeatBtn.classList.remove('active');
+                elements.repeatBtn.textContent = '🔁';
+                elements.repeatBtn.title = 'Repeat: Off';
+            } else if (state.repeatMode === 'all') {
+                elements.repeatBtn.classList.add('active');
+                elements.repeatBtn.textContent = '🔁';
+                elements.repeatBtn.title = 'Repeat: All';
+            } else if (state.repeatMode === 'one') {
+                elements.repeatBtn.classList.add('active');
+                elements.repeatBtn.textContent = '🔂';
+                elements.repeatBtn.title = 'Repeat: One';
+            }
+        }
+
+        // ============ FILTERING & SEARCH ============
+        function applySearch() {
+            const query = elements.searchInput.value.toLowerCase();
+            state.filteredSongs = state.songs.filter(song =>
+                song.title.toLowerCase().includes(query) ||
+                song.artist.toLowerCase().includes(query) ||
+                song.album.toLowerCase().includes(query)
+            );
+            updateLibraryUI();
+        }
+
+        elements.searchInput.addEventListener('input', applySearch);
+
+        // ============ UI UPDATES ============
+        function updateLibraryUI() {
+            if (state.filteredSongs.length === 0) {
+                elements.libraryList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">No songs found</div>
+                    </div>
+                `;
+                return;
+            }
+
+            elements.libraryList.innerHTML = state.filteredSongs.map((song, index) => {
+                const isActive = state.currentIndex === index;
+                return `
+                    <div class="library-item ${isActive ? 'active' : ''}" onclick="playFromLibrary(${index})">
+                        <div class="library-item-title">${song.title}</div>
+                        <div class="library-item-artist">${song.artist}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateUI() {
+            updateLibraryUI();
+            updateFilterUI();
+            updatePlayPauseButton();
+            updateRepeatButton();
+
+            if (state.isShuffle) {
+                elements.shuffleBtn.classList.add('active');
+            } else {
+                elements.shuffleBtn.classList.remove('active');
+            }
+
+            // Update statistics
+            elements.songCount.textContent = state.songs.length;
+
+            const totalSize = state.songs.reduce((sum, s) => sum + (s.size || 0), 0);
+            elements.librarySize.textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+
+            const cacheSize = new Blob([localStorage.getItem('musicLibraryMetadata') || '']).size;
+            elements.cacheSize.textContent = (cacheSize / 1024).toFixed(1) + ' KB';
+
+            const sourceText = state.remoteLibraries.length > 0 ? '📡 Remote + Local' :
+                               state.sourceType === 'local' ? '📁 Local Folder' :
+                               state.sourceType === 'remote' ? '📡 Remote URL' : 'None';
+            elements.sourceType.textContent = sourceText;
+        }
+
+        function playFromLibrary(index) {
+            loadTrack(index);
+            play();
+        }
+
+        // ============ EVENT LISTENERS ============
+        function setupEventListeners() {
+            elements.selectFolderBtn.addEventListener('click', selectFolder);
+            elements.changeFolderBtn.addEventListener('click', selectFolder);
+            elements.searchInput.addEventListener('input', applySearch);
+            elements.settingsBtn.addEventListener('click', () => {
+                elements.tabButtons.forEach(b => b.classList.remove('active'));
+                elements.tabContents.forEach(c => c.classList.remove('active'));
+                elements.tabButtons[2].classList.add('active'); // Settings is tab 2 (after filters)
+                elements.tabContents[2].classList.add('active');
+            });
+            elements.loadRemoteBtn.addEventListener('click', () => {
+                const url = elements.remoteUrlInput.value.trim();
+                if (!url) {
+                    alert('Please enter a URL');
+                    return;
+                }
+                loadRemoteLibrary(url);
+            });
+
+            elements.clearCacheBtn.addEventListener('click', () => {
+                if (confirm('Clear library cache and start fresh?')) {
+                    localStorage.removeItem('musicLibraryMetadata');
+                    state.libraryMetadata = [];
+                    state.songs = [];
+                    state.filteredSongs = [];
+                    state.sourceType = 'none';
+                    updateUI();
+                }
+            });
+
+            elements.playPauseBtn.addEventListener('click', togglePlayPause);
+            elements.nextBtn.addEventListener('click', nextTrack);
+            elements.prevBtn.addEventListener('click', prevTrack);
+
+            elements.shuffleBtn.addEventListener('click', () => {
+                state.isShuffle = !state.isShuffle;
+                elements.shuffleBtn.classList.toggle('active');
+                saveState();
+            });
+
+            elements.repeatBtn.addEventListener('click', () => {
+                const modes = ['off', 'all', 'one'];
+                const currentIndex = modes.indexOf(state.repeatMode);
+                state.repeatMode = modes[(currentIndex + 1) % modes.length];
+                updateRepeatButton();
+                saveState();
+            });
+
+            elements.progressBar.addEventListener('click', (e) => {
+                const rect = elements.progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                elements.audio.currentTime = percent * elements.audio.duration;
+            });
+
+            elements.audio.addEventListener('timeupdate', () => {
+                const percent = (elements.audio.currentTime / elements.audio.duration) * 100;
+                elements.progressFill.style.width = percent + '%';
+                elements.currentTime.textContent = formatTime(elements.audio.currentTime);
+            });
+
+            elements.audio.addEventListener('loadedmetadata', () => {
+                elements.duration.textContent = formatTime(elements.audio.duration);
+            });
+
+            elements.audio.addEventListener('ended', () => {
+                if (state.repeatMode === 'one') {
+                    elements.audio.currentTime = 0;
+                    play();
+                } else {
+                    nextTrack();
+                }
+            });
+
+            elements.tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabName = btn.dataset.tab;
+                    elements.tabButtons.forEach(b => b.classList.remove('active'));
+                    elements.tabContents.forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(tabName + 'Tab').classList.add('active');
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && e.target === document.body) {
+                    e.preventDefault();
+                    togglePlayPause();
+                }
+            });
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // ============ INITIALIZATION ============
+        init();
+    </script>
+</body>
+</html>

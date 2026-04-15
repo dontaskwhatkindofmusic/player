@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Music Player">
+    <title>Static Music Player</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a1a1a' width='100' height='100'/><path fill='%23fff' d='M50 20c-16.6 0-30 13.4-30 30 0 16.6 13.4 30 30 30s30-13.4 30-30c0-16.6-13.4-30-30-30zm-5 45V35l15 15v15z'/></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #0a0a0a;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .library-header {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .library-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .library-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #444;
+        }
+
+        .btn.primary {
+            background: #1db954;
+        }
+
+        .btn.primary:hover {
+            background: #1ed760;
+        }
+
+        .library-filter {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .filter-input::placeholder {
+            color: #666;
+        }
+
+        .library-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .library-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .library-item:hover {
+            background: #1a1a1a;
+        }
+
+        .library-item.active {
+            background: #1db954;
+        }
+
+        .library-item-title {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .library-item-artist {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .library-item-album {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .main-player {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .player-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .album-art {
+            width: 280px;
+            height: 280px;
+            background: linear-gradient(135deg, #1db954 0%, #1aa34a 100%);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .album-art.has-image {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .now-playing-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .now-playing-artist {
+            font-size: 18px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .now-playing-album {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .player-controls {
+            background: #0a0a0a;
+            padding: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .progress-container {
+            margin-bottom: 16px;
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1db954;
+            transition: width 0.1s;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #444;
+        }
+
+        .control-btn.play-pause {
+            width: 56px;
+            height: 56px;
+            background: #1db954;
+            font-size: 24px;
+        }
+
+        .control-btn.play-pause:hover {
+            background: #1ed760;
+        }
+
+        .control-btn.active {
+            background: #1db954;
+        }
+
+        .controls-right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: #1db954;
+            border-radius: 2px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #1db954;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .filter-section {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: #1db954;
+            border-color: #1db954;
+        }
+
+        .filter-chip:hover {
+            border-color: #1db954;
+        }
+
+        .settings-panel {
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1db954;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            width: 40px;
+            height: 24px;
+            background: #333;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .toggle-switch.active {
+            background: #1db954;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+
+        .toggle-switch.active::after {
+            left: 18px;
+        }
+
+        .mobile-setup {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .mobile-setup-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .mobile-setup-steps {
+            font-size: 12px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        .mobile-setup-steps ol {
+            margin-left: 16px;
+            margin-top: 8px;
+        }
+
+        .mobile-setup-steps li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #333;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .album-art {
+                width: 160px;
+                height: 160px;
+                font-size: 48px;
+                margin-bottom: 16px;
+            }
+
+            .now-playing-title {
+                font-size: 20px;
+            }
+
+            .now-playing-artist {
+                font-size: 14px;
+            }
+
+            .player-display {
+                padding: 20px;
+            }
+
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .control-btn.play-pause {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+        }
+
+        /* Scrollbar styling */
+        .sidebar::-webkit-scrollbar,
+        .library-list::-webkit-scrollbar,
+        .player-display::-webkit-scrollbar,
+        .settings-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        .library-list::-webkit-scrollbar-track,
+        .player-display::-webkit-scrollbar-track,
+        .settings-panel::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .library-list::-webkit-scrollbar-thumb,
+        .player-display::-webkit-scrollbar-thumb,
+        .settings-panel::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .library-list::-webkit-scrollbar-thumb:hover,
+        .player-display::-webkit-scrollbar-thumb:hover,
+        .settings-panel::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <!-- Sidebar: Library -->
+            <div class="sidebar">
+                <div class="library-header">
+                    <div class="library-title">Library</div>
+                    <div class="library-controls">
+                        <button class="btn primary" id="selectFolderBtn">📁 Select</button>
+                        <button class="btn" id="settingsBtn">⚙️</button>
+                    </div>
+                </div>
+                <div class="library-filter">
+                    <input
+                        type="text"
+                        class="filter-input"
+                        id="searchInput"
+                        placeholder="Search songs..."
+                    >
+                </div>
+                <div class="library-list" id="libraryList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎵</div>
+                        <div class="empty-state-text">Select a folder to load your music</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Player -->
+            <div class="main-player">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="player">Now Playing</button>
+                    <button class="tab-btn" data-tab="filters">Filters</button>
+                    <button class="tab-btn" data-tab="settings">Settings</button>
+                </div>
+
+                <!-- Now Playing Tab -->
+                <div class="tab-content active" id="playerTab">
+                    <div class="player-display">
+                        <div class="album-art" id="albumArt">🎵</div>
+                        <h1 class="now-playing-title" id="nowPlayingTitle">No track selected</h1>
+                        <p class="now-playing-artist" id="nowPlayingArtist">—</p>
+                        <p class="now-playing-album" id="nowPlayingAlbum">—</p>
+                    </div>
+                </div>
+
+                <!-- Filters Tab -->
+                <div class="tab-content" id="filtersTab">
+                    <div style="flex: 1; overflow-y: auto;">
+                        <div class="filter-section">
+                            <strong style="width: 100%; color: #1db954;">Artists</strong>
+                        </div>
+                        <div class="filter-section" id="artistFilters" style="flex-direction: column; align-items: flex-start;">
+                        </div>
+
+                        <div class="filter-section">
+                            <strong style="width: 100%; color: #1db954;">Genres</strong>
+                        </div>
+                        <div class="filter-section" id="genreFilters" style="flex-direction: column; align-items: flex-start;">
+                        </div>
+
+                        <div class="filter-section">
+                            <strong style="width: 100%; color: #1db954;">Years</strong>
+                        </div>
+                        <div class="filter-section" id="yearFilters" style="flex-direction: column; align-items: flex-start;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div class="tab-content" id="settingsTab">
+                    <div class="settings-panel">
+                        <div class="settings-section">
+                            <div class="settings-title">Playback</div>
+                            <div class="settings-item">
+                                <span>Shuffle</span>
+                                <div class="toggle-switch" id="shuffleToggle"></div>
+                            </div>
+                            <div class="settings-item">
+                                <span>Repeat</span>
+                                <select id="repeatSelect" style="background: #333; color: #fff; border: 1px solid #444; padding: 4px; border-radius: 4px;">
+                                    <option value="off">Off</option>
+                                    <option value="all">All</option>
+                                    <option value="one">One</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">Library</div>
+                            <div class="settings-item">
+                                <span>Folder Path</span>
+                            </div>
+                            <div id="folderPath" style="padding: 8px; background: #1a1a1a; border-radius: 4px; margin-top: 8px; font-size: 12px; color: #999; word-break: break-all; max-height: 60px; overflow-y: auto;">
+                                None selected
+                            </div>
+                            <button class="btn primary" id="changeFolderBtn" style="margin-top: 12px; width: 100%;">Change Folder</button>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">Removed Songs</div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 12px;" id="removedCount">0 songs removed</p>
+                            <button class="btn" id="clearRemovedBtn" style="width: 100%;">Clear Removed Songs</button>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">Mobile Setup</div>
+                            <div class="mobile-setup">
+                                <div class="mobile-setup-title">Add to Home Screen (iOS)</div>
+                                <div class="mobile-setup-steps">
+                                    <ol>
+                                        <li>Open this page in Safari</li>
+                                        <li>Tap the Share button</li>
+                                        <li>Select "Add to Home Screen"</li>
+                                        <li>Name it "Music Player"</li>
+                                        <li>Tap "Add"</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="mobile-setup">
+                                <div class="mobile-setup-title">Add to Home Screen (Android)</div>
+                                <div class="mobile-setup-steps">
+                                    <ol>
+                                        <li>Open this page in Chrome</li>
+                                        <li>Tap the menu (three dots)</li>
+                                        <li>Select "Install app" or "Add to Home Screen"</li>
+                                        <li>Tap "Install"</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <div class="settings-title">About</div>
+                            <div style="font-size: 12px; color: #999;">
+                                <p>Static Music Player v1.0</p>
+                                <p style="margin-top: 8px;">All music files are processed locally. No data is sent to external servers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Controls -->
+        <div class="player-controls">
+            <div class="progress-container">
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" id="prevBtn" title="Previous">⏮</button>
+                <button class="control-btn" id="shuffleBtn" title="Shuffle">🔀</button>
+                <button class="control-btn play-pause" id="playPauseBtn" title="Play/Pause">▶</button>
+                <button class="control-btn" id="repeatBtn" title="Repeat">🔁</button>
+                <button class="control-btn" id="nextBtn" title="Next">⏭</button>
+            </div>
+            <div class="controls-right">
+                <span style="font-size: 14px;">🔊</span>
+                <div class="volume-slider" id="volumeSlider">
+                    <div class="volume-fill" id="volumeFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element -->
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        // ============ GLOBAL STATE ============
+        const state = {
+            songs: [],
+            filteredSongs: [],
+            currentIndex: -1,
+            isPlaying: false,
+            isShuffle: false,
+            repeatMode: 'off', // 'off', 'all', 'one'
+            volume: 0.7,
+            libraryHandle: null,
+            removedSongs: new Set(),
+            activeFilters: {
+                artist: null,
+                genre: null,
+                year: null
+            }
+        };
+
+        const elements = {
+            audio: document.getElementById('audioPlayer'),
+            playPauseBtn: document.getElementById('playPauseBtn'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            shuffleBtn: document.getElementById('shuffleBtn'),
+            repeatBtn: document.getElementById('repeatBtn'),
+            progressBar: document.getElementById('progressBar'),
+            progressFill: document.getElementById('progressFill'),
+            currentTime: document.getElementById('currentTime'),
+            duration: document.getElementById('duration'),
+            volumeSlider: document.getElementById('volumeSlider'),
+            volumeFill: document.getElementById('volumeFill'),
+            libraryList: document.getElementById('libraryList'),
+            searchInput: document.getElementById('searchInput'),
+            selectFolderBtn: document.getElementById('selectFolderBtn'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            nowPlayingTitle: document.getElementById('nowPlayingTitle'),
+            nowPlayingArtist: document.getElementById('nowPlayingArtist'),
+            nowPlayingAlbum: document.getElementById('nowPlayingAlbum'),
+            albumArt: document.getElementById('albumArt'),
+            shuffleToggle: document.getElementById('shuffleToggle'),
+            repeatSelect: document.getElementById('repeatSelect'),
+            folderPath: document.getElementById('folderPath'),
+            changeFolderBtn: document.getElementById('changeFolderBtn'),
+            clearRemovedBtn: document.getElementById('clearRemovedBtn'),
+            removedCount: document.getElementById('removedCount'),
+            artistFilters: document.getElementById('artistFilters'),
+            genreFilters: document.getElementById('genreFilters'),
+            yearFilters: document.getElementById('yearFilters'),
+            tabButtons: document.querySelectorAll('.tab-btn'),
+            tabContents: document.querySelectorAll('.tab-content')
+        };
+
+        // ============ INITIALIZATION ============
+        async function init() {
+            await loadState();
+            registerServiceWorker();
+            setupEventListeners();
+            updateUI();
+        }
+
+        // ============ STATE MANAGEMENT (IndexedDB) ============
+        const dbName = 'MusicPlayerDB';
+        const storeName = 'playerState';
+        let db;
+
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve();
+                };
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        db.createObjectStore(storeName);
+                    }
+                };
+            });
+        }
+
+        async function saveState() {
+            await initDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                store.put({
+                    shuffle: state.isShuffle,
+                    repeatMode: state.repeatMode,
+                    volume: state.volume,
+                    removedSongs: Array.from(state.removedSongs),
+                    libraryHandleStr: state.libraryHandle ? JSON.stringify(state.libraryHandle) : null
+                }, 'config');
+                tx.oncomplete = resolve;
+                tx.onerror = reject;
+            });
+        }
+
+        async function loadState() {
+            await initDB();
+            return new Promise((resolve) => {
+                const tx = db.transaction(storeName, 'readonly');
+                const store = tx.objectStore(storeName);
+                const request = store.get('config');
+                request.onsuccess = () => {
+                    const data = request.result;
+                    if (data) {
+                        state.isShuffle = data.shuffle || false;
+                        state.repeatMode = data.repeatMode || 'off';
+                        state.volume = data.volume !== undefined ? data.volume : 0.7;
+                        state.removedSongs = new Set(data.removedSongs || []);
+                        elements.audio.volume = state.volume;
+                        updateVolumeDisplay();
+                    }
+                    resolve();
+                };
+            });
+        }
+
+        // ============ FILE SYSTEM ACCESS ============
+        async function selectFolder() {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                state.libraryHandle = dirHandle;
+                await loadLibrary(dirHandle);
+                saveState();
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Error selecting folder:', err);
+                }
+            }
+        }
+
+        async function loadLibrary(dirHandle) {
+            state.songs = [];
+            state.removedSongs.clear();
+            await scanDirectory(dirHandle);
+            state.songs.sort((a, b) => (a.artist || '').localeCompare(b.artist) || (a.title || '').localeCompare(b.title));
+            applyFilters();
+            updateUI();
+            elements.folderPath.textContent = dirHandle.name;
+            saveState();
+        }
+
+        async function scanDirectory(dirHandle, currentPath = '') {
+            try {
+                for await (const [name, handle] of dirHandle.entries()) {
+                    if (handle.kind === 'file') {
+                        const extension = name.split('.').pop().toLowerCase();
+                        if (['mp3', 'wav', 'flac', 'm4a', 'ogg', 'aac'].includes(extension)) {
+                            const file = await handle.getFile();
+                            const metadata = await extractMetadata(file, name);
+                            state.songs.push({
+                                file,
+                                name,
+                                path: currentPath ? `${currentPath}/${name}` : name,
+                                ...metadata
+                            });
+                        }
+                    } else if (handle.kind === 'directory') {
+                        const newPath = currentPath ? `${currentPath}/${name}` : name;
+                        await scanDirectory(handle, newPath);
+                    }
+                }
+            } catch (err) {
+                console.error('Error scanning directory:', err);
+            }
+        }
+
+        // ============ METADATA EXTRACTION ============
+        async function extractMetadata(file, filename) {
+            const metadata = {
+                title: filename.replace(/\.[^.]+$/, ''),
+                artist: 'Unknown Artist',
+                album: 'Unknown Album',
+                year: new Date().getFullYear(),
+                genre: 'Unknown'
+            };
+
+            try {
+                if (file.type === 'audio/mpeg' || filename.endsWith('.mp3')) {
+                    await extractID3Metadata(file, metadata);
+                } else if (filename.endsWith('.m4a') || filename.endsWith('.aac')) {
+                    await extractM4AMetadata(file, metadata);
+                } else if (filename.endsWith('.flac')) {
+                    // FLAC metadata extraction would go here
+                    // For now, use filename fallback
+                }
+            } catch (err) {
+                console.error('Error extracting metadata from', filename, err);
+            }
+
+            return metadata;
+        }
+
+        async function extractID3Metadata(file, metadata) {
+            const buffer = await file.arrayBuffer();
+            const view = new Uint8Array(buffer);
+
+            // Look for ID3v2 tag
+            if (view[0] === 0x49 && view[1] === 0x44 && view[2] === 0x33) { // 'ID3'
+                const version = view[3];
+                if (version >= 3 && version <= 4) {
+                    const frameSize = ((view[6] & 0x7f) << 21) | ((view[7] & 0x7f) << 14) | ((view[8] & 0x7f) << 7) | (view[9] & 0x7f);
+                    const tagEnd = 10 + frameSize;
+
+                    let pos = 10;
+                    while (pos < tagEnd && pos < view.length - 4) {
+                        const frameID = String.fromCharCode(view[pos], view[pos+1], view[pos+2], view[pos+3]);
+                        const frameSizeVal = (view[pos+4] << 24) | (view[pos+5] << 16) | (view[pos+6] << 8) | view[pos+7];
+                        const frameData = view.slice(pos + 10, pos + 10 + frameSizeVal);
+
+                        const text = decodeText(frameData);
+
+                        if (frameID === 'TIT2') metadata.title = text; // Title
+                        if (frameID === 'TPE1') metadata.artist = text; // Artist
+                        if (frameID === 'TALB') metadata.album = text; // Album
+                        if (frameID === 'TYER') metadata.year = parseInt(text) || metadata.year; // Year
+                        if (frameID === 'TCON') metadata.genre = text; // Genre
+
+                        pos += 10 + frameSizeVal;
+                    }
+                }
+            }
+        }
+
+        async function extractM4AMetadata(file, metadata) {
+            const buffer = await file.arrayBuffer();
+            const view = new Uint8Array(buffer);
+
+            // Simple M4A metadata extraction
+            // Looking for 'ftyp' atom to confirm it's an MP4/M4A file
+            if (String.fromCharCode(view[4], view[5], view[6], view[7]) === 'ftyp') {
+                // Search for 'ilst' atom containing metadata
+                const ilistr = findString(view, 'ilst');
+                if (ilistr !== -1) {
+                    // Simplified extraction - full M4A parsing is complex
+                    // For production, use a library like jsmediatags
+                }
+            }
+        }
+
+        function decodeText(bytes) {
+            if (bytes.length === 0) return '';
+            const encoding = bytes[0];
+            const content = bytes.slice(1);
+
+            switch (encoding) {
+                case 0: // ISO-8859-1
+                    return String.fromCharCode(...content);
+                case 1: // UTF-16 with BOM
+                case 3: // UTF-8
+                    return new TextDecoder().decode(content);
+                default:
+                    return String.fromCharCode(...content);
+            }
+        }
+
+        function findString(bytes, str) {
+            const target = Array.from(str).map(c => c.charCodeAt(0));
+            for (let i = 0; i <= bytes.length - target.length; i++) {
+                if (target.every((byte, idx) => bytes[i + idx] === byte)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // ============ PLAYBACK CONTROLS ============
+        function play() {
+            if (state.currentIndex >= 0) {
+                elements.audio.play();
+                state.isPlaying = true;
+                updatePlayPauseButton();
+                updateMediaSession();
+            }
+        }
+
+        function pause() {
+            elements.audio.pause();
+            state.isPlaying = false;
+            updatePlayPauseButton();
+            updateMediaSession();
+        }
+
+        function togglePlayPause() {
+            if (state.isPlaying) {
+                pause();
+            } else {
+                play();
+            }
+        }
+
+        function nextTrack() {
+            if (state.filteredSongs.length === 0) return;
+
+            if (state.isShuffle) {
+                state.currentIndex = Math.floor(Math.random() * state.filteredSongs.length);
+            } else {
+                state.currentIndex = (state.currentIndex + 1) % state.filteredSongs.length;
+            }
+
+            loadTrack(state.currentIndex);
+            play();
+        }
+
+        function prevTrack() {
+            if (state.filteredSongs.length === 0) return;
+            state.currentIndex = (state.currentIndex - 1 + state.filteredSongs.length) % state.filteredSongs.length;
+            loadTrack(state.currentIndex);
+            play();
+        }
+
+        function loadTrack(index) {
+            if (index < 0 || index >= state.filteredSongs.length) return;
+
+            state.currentIndex = index;
+            const song = state.filteredSongs[index];
+
+            const url = URL.createObjectURL(song.file);
+            elements.audio.src = url;
+
+            updateNowPlaying(song);
+            updateLibraryUI();
+            updateMediaSession();
+        }
+
+        // ============ FILTERING & SEARCH ============
+        function applyFilters() {
+            state.filteredSongs = state.songs.filter(song => {
+                // Removed songs filter
+                if (state.removedSongs.has(song.path)) return false;
+
+                // Search filter
+                const searchTerm = elements.searchInput.value.toLowerCase();
+                if (searchTerm && !song.title.toLowerCase().includes(searchTerm) &&
+                    !song.artist.toLowerCase().includes(searchTerm) &&
+                    !song.album.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                // Advanced filters
+                if (state.activeFilters.artist && song.artist !== state.activeFilters.artist) return false;
+                if (state.activeFilters.genre && song.genre !== state.activeFilters.genre) return false;
+                if (state.activeFilters.year && song.year !== state.activeFilters.year) return false;
+
+                return true;
+            });
+
+            updateLibraryUI();
+            updateFilterUI();
+        }
+
+        function updateFilterUI() {
+            // Update artist filters
+            const artists = [...new Set(state.songs.map(s => s.artist))].sort();
+            elements.artistFilters.innerHTML = artists.map(artist => `
+                <div class="filter-chip ${state.activeFilters.artist === artist ? 'active' : ''}"
+                     onclick="setFilter('artist', '${artist.replace(/'/g, "\\'")}')">
+                    ${artist}
+                </div>
+            `).join('');
+
+            // Update genre filters
+            const genres = [...new Set(state.songs.map(s => s.genre))].sort();
+            elements.genreFilters.innerHTML = genres.map(genre => `
+                <div class="filter-chip ${state.activeFilters.genre === genre ? 'active' : ''}"
+                     onclick="setFilter('genre', '${genre.replace(/'/g, "\\'")}')">
+                    ${genre}
+                </div>
+            `).join('');
+
+            // Update year filters
+            const years = [...new Set(state.songs.map(s => s.year))].sort((a, b) => b - a);
+            elements.yearFilters.innerHTML = years.map(year => `
+                <div class="filter-chip ${state.activeFilters.year === year ? 'active' : ''}"
+                     onclick="setFilter('year', ${year})">
+                    ${year}
+                </div>
+            `).join('');
+        }
+
+        function setFilter(filterType, value) {
+            state.activeFilters[filterType] = state.activeFilters[filterType] === value ? null : value;
+            applyFilters();
+        }
+
+        // ============ UI UPDATES ============
+        function updateLibraryUI() {
+            if (state.filteredSongs.length === 0) {
+                elements.libraryList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">No songs found</div>
+                    </div>
+                `;
+                return;
+            }
+
+            elements.libraryList.innerHTML = state.filteredSongs.map((song, index) => {
+                const isActive = state.currentIndex === index;
+                return `
+                    <div class="library-item ${isActive ? 'active' : ''}" onclick="playFromLibrary(${index})">
+                        <div class="library-item-title">${song.title}</div>
+                        <div class="library-item-artist">${song.artist}</div>
+                        <div class="library-item-album">${song.album}</div>
+                        <div style="font-size: 10px; color: #555; margin-top: 4px; display: flex; justify-content: space-between;">
+                            <span>${song.year}</span>
+                            <button onclick="event.stopPropagation(); removeSong('${song.path.replace(/'/g, "\\'")}');" style="background: transparent; border: none; color: #666; cursor: pointer; padding: 0;">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateNowPlaying(song) {
+            elements.nowPlayingTitle.textContent = song.title;
+            elements.nowPlayingArtist.textContent = song.artist;
+            elements.nowPlayingAlbum.textContent = song.album;
+            elements.albumArt.textContent = '🎵';
+            elements.albumArt.style.background = '';
+        }
+
+        function updatePlayPauseButton() {
+            elements.playPauseBtn.textContent = state.isPlaying ? '⏸' : '▶';
+        }
+
+        function updateVolumeDisplay() {
+            const percentage = state.volume * 100;
+            elements.volumeFill.style.width = percentage + '%';
+        }
+
+        function updateUI() {
+            updateLibraryUI();
+            updatePlayPauseButton();
+            updateVolumeDisplay();
+            updateFilterUI();
+            elements.shuffleToggle.classList.toggle('active', state.isShuffle);
+            elements.repeatSelect.value = state.repeatMode;
+            elements.removedCount.textContent = state.removedSongs.size + ' songs removed';
+        }
+
+        function playFromLibrary(index) {
+            loadTrack(index);
+            play();
+        }
+
+        function removeSong(path) {
+            state.removedSongs.add(path);
+            saveState();
+            applyFilters();
+            updateUI();
+        }
+
+        // ============ EVENT LISTENERS ============
+        function setupEventListeners() {
+            // Folder selection
+            elements.selectFolderBtn.addEventListener('click', selectFolder);
+            elements.changeFolderBtn.addEventListener('click', selectFolder);
+
+            // Playback controls
+            elements.playPauseBtn.addEventListener('click', togglePlayPause);
+            elements.nextBtn.addEventListener('click', nextTrack);
+            elements.prevBtn.addEventListener('click', prevTrack);
+
+            // Shuffle & Repeat
+            elements.shuffleToggle.addEventListener('click', () => {
+                state.isShuffle = !state.isShuffle;
+                elements.shuffleToggle.classList.toggle('active');
+                saveState();
+            });
+
+            elements.repeatSelect.addEventListener('change', (e) => {
+                state.repeatMode = e.target.value;
+                saveState();
+            });
+
+            // Progress bar
+            elements.progressBar.addEventListener('click', (e) => {
+                const rect = elements.progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                elements.audio.currentTime = percent * elements.audio.duration;
+            });
+
+            // Volume
+            elements.volumeSlider.addEventListener('click', (e) => {
+                const rect = elements.volumeSlider.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                state.volume = Math.max(0, Math.min(1, percent));
+                elements.audio.volume = state.volume;
+                updateVolumeDisplay();
+                saveState();
+            });
+
+            // Search
+            elements.searchInput.addEventListener('input', applyFilters);
+
+            // Tab switching
+            elements.tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabName = btn.dataset.tab;
+                    elements.tabButtons.forEach(b => b.classList.remove('active'));
+                    elements.tabContents.forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(tabName + 'Tab').classList.add('active');
+                });
+            });
+
+            // Clear removed songs
+            elements.clearRemovedBtn.addEventListener('click', () => {
+                state.removedSongs.clear();
+                saveState();
+                applyFilters();
+                updateUI();
+            });
+
+            // Audio element events
+            elements.audio.addEventListener('timeupdate', () => {
+                const percent = (elements.audio.currentTime / elements.audio.duration) * 100;
+                elements.progressFill.style.width = percent + '%';
+                elements.currentTime.textContent = formatTime(elements.audio.currentTime);
+            });
+
+            elements.audio.addEventListener('loadedmetadata', () => {
+                elements.duration.textContent = formatTime(elements.audio.duration);
+            });
+
+            elements.audio.addEventListener('ended', () => {
+                if (state.repeatMode === 'one') {
+                    elements.audio.currentTime = 0;
+                    play();
+                } else {
+                    nextTrack();
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && e.target === document.body) {
+                    e.preventDefault();
+                    togglePlayPause();
+                }
+            });
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // ============ MEDIA SESSION API (Device Controls) ============
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator) || state.currentIndex < 0) return;
+
+            const song = state.filteredSongs[state.currentIndex];
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: song.title,
+                artist: song.artist,
+                album: song.album,
+                artwork: [
+                    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect fill="%231db954" width="300" height="300"/><text x="150" y="150" font-size="80" fill="white" text-anchor="middle" dy=".3em">🎵</text></svg>', sizes: '300x300', type: 'image/svg+xml' }
+                ]
+            });
+
+            navigator.mediaSession.setActionHandler('play', play);
+            navigator.mediaSession.setActionHandler('pause', pause);
+            navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+            navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+            navigator.mediaSession.setActionHandler('seekto', (details) => {
+                elements.audio.currentTime = details.seekTime;
+            });
+
+            navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
+        }
+
+        // ============ SERVICE WORKER REGISTRATION ============
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(() => {
+                    console.log('Service Worker registration failed (expected if sw.js not available)');
+                });
+            }
+        }
+
+        // ============ INITIALIZATION ============
+        init();
+    </script>
+</body>
+</html>

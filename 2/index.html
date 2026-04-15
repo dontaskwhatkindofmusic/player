@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player - Start Here</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #0a0a0a;
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid #333;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            color: #000;
+        }
+
+        .btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(29, 185, 84, 0.3);
+        }
+
+        .btn.secondary {
+            background: #333;
+            color: #fff;
+            border: 1px solid #444;
+        }
+
+        .btn.secondary:hover {
+            background: #444;
+            border-color: #555;
+        }
+
+        .features {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .features-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1db954;
+        }
+
+        .feature-list {
+            list-style: none;
+            font-size: 13px;
+            color: #999;
+            line-height: 1.8;
+        }
+
+        .feature-list li {
+            margin-bottom: 6px;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #1db954;
+            font-weight: 600;
+        }
+
+        .docs {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .docs-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1db954;
+        }
+
+        .docs-list {
+            list-style: none;
+            font-size: 13px;
+        }
+
+        .docs-list li {
+            margin-bottom: 8px;
+        }
+
+        .docs-list a {
+            color: #1db954;
+            text-decoration: none;
+        }
+
+        .docs-list a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #222;
+            padding-top: 20px;
+        }
+
+        .note {
+            background: #1db954;
+            background-opacity: 0.1;
+            border-left: 3px solid #1db954;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🎵</div>
+            <h1>Music Player</h1>
+            <p class="subtitle">Local • Fast • Private</p>
+            <p class="description">A fully-featured music player that works completely offline on your device</p>
+        </div>
+
+        <div class="buttons">
+            <a href="music-player-enhanced.html" class="btn primary">🎵 Enhanced Player (v2.0)</a>
+            <a href="USE_ENHANCED_VERSION.md" class="btn secondary">📖 What's New?</a>
+        </div>
+
+        <div class="note">
+            💡 <strong>v2.0 Features:</strong> Persistent cache (survives refresh!) + GitHub remote libraries + library statistics
+        </div>
+
+        <div class="features">
+            <div class="features-title">v2.0 Features</div>
+            <ul class="feature-list">
+                <li>✅ <strong>Persistent cache:</strong> Library survives refresh (instant load!)</li>
+                <li>✅ <strong>GitHub support:</strong> Host your library on GitHub, share URLs with friends</li>
+                <li>✅ <strong>Library statistics:</strong> See songs loaded, cache size, library size</li>
+                <li>✅ <strong>Local or remote:</strong> Use local folder OR GitHub URL</li>
+                <li>✅ <strong>All formats:</strong> MP3, WAV, FLAC, M4A, OGG, AAC</li>
+                <li>✅ <strong>Zero privacy concerns:</strong> All processing local, nothing uploaded</li>
+            </ul>
+        </div>
+
+        <div class="docs">
+            <div class="docs-title">Documentation</div>
+            <ul class="docs-list">
+                <li><a href="USE_ENHANCED_VERSION.md">Getting Started</a> — How to use v2.0</li>
+                <li><a href="VERSION2_CHANGES.md">What's New</a> — Cache & remote features</li>
+                <li><a href="REMOTE_LIBRARY.md">GitHub Setup Guide</a> — Share your music library</li>
+                <li><a href="README.md">Complete Guide</a> — Full documentation</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Static Music Player v1.0 • Works offline • No accounts needed • No tracking</p>
+        </div>
+    </div>
+</body>
+</html>
